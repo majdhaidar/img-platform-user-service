@@ -1,0 +1,19 @@
+server:
+  port: 9090
+spring:
+  application:
+    name: USERS-SERVICE
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: userservice
+
+jwt:
+  secret: your-secret-key-should-be-very-long-and-secure-and-not-in-code
+  expiration: 3600000  # 1 hour in milliseconds
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    com.user.service: DEBUG
