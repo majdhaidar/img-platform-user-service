@@ -7,32 +7,28 @@ import com.users.service.exceptions.DuplicateUserException;
 import com.users.service.exceptions.UserNotFoundException;
 import com.users.service.repositories.UserRepository;
 import com.users.service.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.users.service.services.objectstore.ObjectStorageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectStorageService objectStorageService;
     private final Random random = new Random();
 
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository,
-                           PasswordEncoder passwordEncoder,
-                           JwtTokenProvider jwtTokenProvider) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
 
     // Generate custom user ID
     private String generateUserId() {
@@ -116,5 +112,37 @@ public class UserServiceImpl implements UserService {
     public Page<UserResp> getAllUsers(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
         return users.map(UserResp::new);
+    }
+
+    @Override
+    public UserResp uploadProfilePicture(String userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        // Delete old profile picture if exists
+        if (user.getProfileImageUrl() != null) {
+            objectStorageService.deleteProfilePicture(user.getProfileImageUrl());
+        }
+
+        // Upload new profile picture
+        String profilePictureUrl = objectStorageService.uploadProfilePicture(userId, file);
+
+        // Update user
+        user.setProfileImageUrl(profilePictureUrl);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        return convertToUserResponse(user);
+    }
+
+    private UserResp convertToUserResponse(User user) {
+        UserResp response = new UserResp();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setProfileImageUrl(user.getProfileImageUrl());
+        return response;
     }
 }

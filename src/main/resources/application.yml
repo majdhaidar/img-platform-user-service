@@ -13,6 +13,13 @@ jwt:
   secret: your-secret-key-should-be-very-long-and-secure-and-not-in-code
   expiration: 3600000  # 1 hour in milliseconds
 
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: user-profiles
+
+
 logging:
   level:
     org.springframework.data.mongodb: DEBUG
