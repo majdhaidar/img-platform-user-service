@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -74,5 +75,19 @@ public class UsersController {
         Pageable pageable = PageRequest.of(page, size);
         Page<UserResp> users = userService.getAllUsersByIds(ids, pageable);
         return ResponseEntity.ok(users);
+    }
+
+    @PostMapping("/{id}/profile-picture")
+    public ResponseEntity<UserResp> uploadProfilePicture(
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            UserResp user = userService.uploadProfilePicture(id, file);
+            return ResponseEntity.ok(user);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
