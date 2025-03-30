@@ -8,6 +8,11 @@ spring:
       host: localhost
       port: 27017
       database: userservice
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+      enabled: true
 
 jwt:
   secret: your-secret-key-should-be-very-long-and-secure-and-not-in-code

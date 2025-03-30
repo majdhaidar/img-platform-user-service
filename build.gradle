@@ -33,6 +33,7 @@ dependencies {
 	implementation 'io.minio:minio:8.5.3'
 	// For handling multipart file uploads
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.imgscalr:imgscalr-lib:4.2'
 }
 
 tasks.named('test') {
